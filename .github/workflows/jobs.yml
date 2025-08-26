@@ -1,0 +1,39 @@
+name: jobs
+
+on:
+  push:
+
+jobs:
+  concurrency-job1:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: test
+    steps:
+      - run: sleep 15
+  concurrency-job2:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: test
+    steps:
+      - run: sleep 15
+  deploy-job:
+    name: deploy jobs
+    runs-on: ubuntu-latest
+    needs: build-job
+    steps:
+      - name: test build job
+        run: echo ${{ needs.build-job.outputs.build-output }}
+  build-job:
+    outputs: 
+      build-output: ${{ steps.buildStep.outputs.buildOut }}
+    name: build job
+    runs-on: ubuntu-latest
+    container:
+      image: oven/bun:slim
+    steps:
+      - name: define build output
+        id: buildStep
+        run: |
+          bunver-$(bun --version)
+          echo "buildOut-$bunver" >> "$GITHUB-OUTPUT"
+          
